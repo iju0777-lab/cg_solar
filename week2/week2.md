@@ -154,7 +154,7 @@ Rz · T의 조합을 통해 달과 ISS가 지구를 중심으로 공전하도록
   ]
 }
 
-실행 코드: Task 1
+실행 코드: https://iju0777-lab.github.io/cg_solar/week2/task1.html
 
 조사 자료 출처: 지구 및 달의 크기와 거리: NASA, Planetary Fact Sheet
 https://nssdc.gsfc.nasa.gov/planetary/factsheet/
