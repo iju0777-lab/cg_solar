@@ -58,9 +58,101 @@ Rz · T의 조합을 통해 달과 ISS가 지구를 중심으로 공전하도록
 
 실습 설정 및 결과
 
-공유 링크: [Task 1 공유 링크 입력]
+공유 링크: https://cg.catholic.ac.kr/~mgchoi/CG/demos/d02-transform-lab.html?d=eyJyYW5nZSI6eyJ4IjoiNzAiLCJ5IjoiNzAiLCJ6IjoiNzAifSwib2JqZWN0cyI6W3siaWQiOiJlYXJ0aCIsIm5hbWUiOiLsp4DqtawiLCJjb2xvciI6WzAuMzUsMC42LDAuOTVdLCJzdGVwcyI6W119LHsiaWQiOiJtb29uIiwibmFtZSI6IuuLrCIsImNvbG9yIjpbMC43OCwwLjc4LDAuODJdLCJzdGVwcyI6W3sidHlwZSI6IlJ6IiwiYXJncyI6WyJ0KjIwIl19LHsidHlwZSI6IlQiLCJhcmdzIjpbIjYwLjMiLCIwIiwiMCJdfSx7InR5cGUiOiJTdSIsImFyZ3MiOlsiMC4yNzMiXX0seyJ0eXBlIjoiUnoiLCJhcmdzIjpbIjE4MCJdfV19LHsiaWQiOiJzYXQiLCJuYW1lIjoi7J246rO17JyE7ISxIiwiY29sb3IiOlswLjk1LDAuNzIsMC4zNV0sInN0ZXBzIjpbeyJ0eXBlIjoiUnoiLCJhcmdzIjpbInQqOTAiXX0seyJ0eXBlIjoiVCIsImFyZ3MiOlsiMS4wNjMiLCIwIiwiMCJdfSx7InR5cGUiOiJTdSIsImFyZ3MiOlsiMC4wMDAwNzEiXX0seyJ0eXBlIjoiUnoiLCJhcmdzIjpbIjE4MCJdfV19XX0%3D
 
-설정 JSON: [Task 1 JSON 입력]
+설정 JSON: {
+  "range": {
+    "x": "70",
+    "y": "70",
+    "z": "70"
+  },
+  "objects": [
+    {
+      "id": "earth",
+      "name": "지구",
+      "color": [
+        0.35,
+        0.6,
+        0.95
+      ],
+      "steps": []
+    },
+    {
+      "id": "moon",
+      "name": "달",
+      "color": [
+        0.78,
+        0.78,
+        0.82
+      ],
+      "steps": [
+        {
+          "type": "Rz",
+          "args": [
+            "t*20"
+          ]
+        },
+        {
+          "type": "T",
+          "args": [
+            "60.3",
+            "0",
+            "0"
+          ]
+        },
+        {
+          "type": "Su",
+          "args": [
+            "0.273"
+          ]
+        },
+        {
+          "type": "Rz",
+          "args": [
+            "180"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sat",
+      "name": "인공위성",
+      "color": [
+        0.95,
+        0.72,
+        0.35
+      ],
+      "steps": [
+        {
+          "type": "Rz",
+          "args": [
+            "t*90"
+          ]
+        },
+        {
+          "type": "T",
+          "args": [
+            "1.063",
+            "0",
+            "0"
+          ]
+        },
+        {
+          "type": "Su",
+          "args": [
+            "0.000071"
+          ]
+        },
+        {
+          "type": "Rz",
+          "args": [
+            "180"
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 실행 코드: Task 1
 
@@ -107,9 +199,120 @@ Q4. 비율을 유지한 결과 지구와 ISS는 어떻게 보이는가?
 
 실습 설정 및 결과
 
-공유 링크: [Task 2 공유 링크 입력]
+공유 링크: https://cg.catholic.ac.kr/~mgchoi/CG/demos/d02-transform-lab.html?d=eyJyYW5nZSI6eyJ4IjoiMSIsInkiOiIxIiwieiI6IjEifSwib2JqZWN0cyI6W3siaWQiOiJlYXJ0aCIsIm5hbWUiOiLsp4DqtawiLCJjb2xvciI6WzAuMzUsMC42LDAuOTVdLCJzdGVwcyI6W3sidHlwZSI6IlN1IiwiYXJncyI6WyIwLjAxNSJdfV19LHsiaWQiOiJtb29uIiwibmFtZSI6IuuLrCIsImNvbG9yIjpbMC43OCwwLjc4LDAuODJdLCJzdGVwcyI6W3sidHlwZSI6IlN1IiwiYXJncyI6WyIwLjAxNSJdfSx7InR5cGUiOiJSeiIsImFyZ3MiOlsidCoyMCJdfSx7InR5cGUiOiJUIiwiYXJncyI6WyI2MC4zIiwiMCIsIjAiXX0seyJ0eXBlIjoiU3UiLCJhcmdzIjpbIjAuMjczIl19LHsidHlwZSI6IlJ6IiwiYXJncyI6WyIxODAiXX1dfSx7ImlkIjoic2F0IiwibmFtZSI6IuyduOqzteychOyEsSIsImNvbG9yIjpbMC45NSwwLjcyLDAuMzVdLCJzdGVwcyI6W3sidHlwZSI6IlN1IiwiYXJncyI6WyIwLjAxNSJdfSx7InR5cGUiOiJSeiIsImFyZ3MiOlsidCo5MCJdfSx7InR5cGUiOiJUIiwiYXJncyI6WyIxLjA2MyIsIjAiLCIwIl19LHsidHlwZSI6IlN1IiwiYXJncyI6WyIwLjAwMDA3MSJdfSx7InR5cGUiOiJSeiIsImFyZ3MiOlsiMTgwIl19XX1dfQ%3D%3D
 
-설정 JSON: [Task 2 JSON 입력]
+설정 JSON: {
+  "range": {
+    "x": "1",
+    "y": "1",
+    "z": "1"
+  },
+  "objects": [
+    {
+      "id": "earth",
+      "name": "지구",
+      "color": [
+        0.35,
+        0.6,
+        0.95
+      ],
+      "steps": [
+        {
+          "type": "Su",
+          "args": [
+            "0.015"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moon",
+      "name": "달",
+      "color": [
+        0.78,
+        0.78,
+        0.82
+      ],
+      "steps": [
+        {
+          "type": "Su",
+          "args": [
+            "0.015"
+          ]
+        },
+        {
+          "type": "Rz",
+          "args": [
+            "t*20"
+          ]
+        },
+        {
+          "type": "T",
+          "args": [
+            "60.3",
+            "0",
+            "0"
+          ]
+        },
+        {
+          "type": "Su",
+          "args": [
+            "0.273"
+          ]
+        },
+        {
+          "type": "Rz",
+          "args": [
+            "180"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sat",
+      "name": "인공위성",
+      "color": [
+        0.95,
+        0.72,
+        0.35
+      ],
+      "steps": [
+        {
+          "type": "Su",
+          "args": [
+            "0.015"
+          ]
+        },
+        {
+          "type": "Rz",
+          "args": [
+            "t*90"
+          ]
+        },
+        {
+          "type": "T",
+          "args": [
+            "1.063",
+            "0",
+            "0"
+          ]
+        },
+        {
+          "type": "Su",
+          "args": [
+            "0.000071"
+          ]
+        },
+        {
+          "type": "Rz",
+          "args": [
+            "180"
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 실행 코드: Task 2
 
@@ -147,9 +350,138 @@ Q3. 제안한 방법의 장점과 한계는 무엇인가?
 
 실습 설정 및 결과
 
-공유 링크: [Task 3 공유 링크 입력]
+공유 링크: https://cg.catholic.ac.kr/~mgchoi/CG/demos/d02-transform-lab.html?d=eyJyYW5nZSI6eyJ4IjoiMSIsInkiOiIxIiwieiI6IjEifSwib2JqZWN0cyI6W3siaWQiOiJlYXJ0aCIsIm5hbWUiOiLsp4DqtawiLCJjb2xvciI6WzAuMzUsMC42LDAuOTVdLCJzdGVwcyI6W3sidHlwZSI6IlN1IiwiYXJncyI6WyIwLjAxNSJdfSx7InR5cGUiOiJTdSIsImFyZ3MiOlsiMTAiXX1dfSx7ImlkIjoibW9vbiIsIm5hbWUiOiLri6wiLCJjb2xvciI6WzAuNzgsMC43OCwwLjgyXSwic3RlcHMiOlt7InR5cGUiOiJTdSIsImFyZ3MiOlsiMC4wMTUiXX0seyJ0eXBlIjoiUnoiLCJhcmdzIjpbInQqMjAiXX0seyJ0eXBlIjoiVCIsImFyZ3MiOlsiNjAuMyIsIjAiLCIwIl19LHsidHlwZSI6IlN1IiwiYXJncyI6WyIwLjI3MyJdfSx7InR5cGUiOiJTdSIsImFyZ3MiOlsiMTAiXX0seyJ0eXBlIjoiUnoiLCJhcmdzIjpbIjE4MCJdfV19LHsiaWQiOiJzYXQiLCJuYW1lIjoi7J246rO17JyE7ISxIiwiY29sb3IiOlswLjk1LDAuNzIsMC4zNV0sInN0ZXBzIjpbeyJ0eXBlIjoiU3UiLCJhcmdzIjpbIjAuMDE1Il19LHsidHlwZSI6IlJ6IiwiYXJncyI6WyJ0KjkwIl19LHsidHlwZSI6IlQiLCJhcmdzIjpbIjE1IiwiMCIsIjAiXX0seyJ0eXBlIjoiU3UiLCJhcmdzIjpbIjAuMDAwMDcxIl19LHsidHlwZSI6IlN1IiwiYXJncyI6WyIxMDAwMCJdfSx7InR5cGUiOiJSeiIsImFyZ3MiOlsiMTgwIl19XX1dfQ%3D%3D
 
-설정 JSON: [Task 3 JSON 입력]
+설정 JSON: {
+  "range": {
+    "x": "1",
+    "y": "1",
+    "z": "1"
+  },
+  "objects": [
+    {
+      "id": "earth",
+      "name": "지구",
+      "color": [
+        0.35,
+        0.6,
+        0.95
+      ],
+      "steps": [
+        {
+          "type": "Su",
+          "args": [
+            "0.015"
+          ]
+        },
+        {
+          "type": "Su",
+          "args": [
+            "10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moon",
+      "name": "달",
+      "color": [
+        0.78,
+        0.78,
+        0.82
+      ],
+      "steps": [
+        {
+          "type": "Su",
+          "args": [
+            "0.015"
+          ]
+        },
+        {
+          "type": "Rz",
+          "args": [
+            "t*20"
+          ]
+        },
+        {
+          "type": "T",
+          "args": [
+            "60.3",
+            "0",
+            "0"
+          ]
+        },
+        {
+          "type": "Su",
+          "args": [
+            "0.273"
+          ]
+        },
+        {
+          "type": "Su",
+          "args": [
+            "10"
+          ]
+        },
+        {
+          "type": "Rz",
+          "args": [
+            "180"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sat",
+      "name": "인공위성",
+      "color": [
+        0.95,
+        0.72,
+        0.35
+      ],
+      "steps": [
+        {
+          "type": "Su",
+          "args": [
+            "0.015"
+          ]
+        },
+        {
+          "type": "Rz",
+          "args": [
+            "t*90"
+          ]
+        },
+        {
+          "type": "T",
+          "args": [
+            "15",
+            "0",
+            "0"
+          ]
+        },
+        {
+          "type": "Su",
+          "args": [
+            "0.000071"
+          ]
+        },
+        {
+          "type": "Su",
+          "args": [
+            "10000"
+          ]
+        },
+        {
+          "type": "Rz",
+          "args": [
+            "180"
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 실행 코드: Task 3
 
