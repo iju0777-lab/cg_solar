@@ -12,7 +12,7 @@
   <canvas id="glcanvas"></canvas>
   <script>
     const canvas = document.getElementById('glcanvas');
-    const gl = canvas.getContext('webgl');
+    const gl = canvas.getContext('webgl2');
 
     if (!gl) {
       alert('이 브라우저에서는 WebGL2를 사용할 수 없습니다.');
