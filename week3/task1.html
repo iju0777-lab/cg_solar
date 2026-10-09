@@ -156,15 +156,13 @@ uniform mat4  uViewProj;              // 카메라에서 본 모습 + 원근
 out vec3 vColor;                      // 프래그먼트 셰이더로 넘길 값
 out vec3 vNormal;
 
+
 void main() {
   vColor  = aColor;
-  vNormal = aNormal;
+  vNormal = mat3(uModel) * aNormal;
   gl_Position = uViewProj * uModel * vec4(aPos, 1.0);
-
-  // gl_Position 에 넣는 값이 그 정점의 최종 위치(NDC)입니다.
-  // 지금은 아무 변환도 하지 않으므로 정점 좌표가 그대로 화면 좌표가 됩니다.
-  gl_Position = vec4(aPos, 1.0);
 }
+
 `;
 
 /* ══════════════════════════════════════════════════════════════════════════
