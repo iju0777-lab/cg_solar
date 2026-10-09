@@ -179,7 +179,12 @@ uniform float uTime;
 out vec4 fragColor;                   // 이 픽셀의 최종 색
 
 void main() {
-  fragColor = vec4(vColor, 1.0);
+  vec3 N = normalize(vNormal);                       // 보간 때문에 길이가 틀어져 있다
+  vec3 L = normalize(vec3(0.45, 0.8, 0.35));         // 광원 쪽 방향
+
+  float diff = max(dot(N, L), 0.0);                  // ← 2주차의 내적
+
+  fragColor = vec4(vColor * (0.3 + 0.7 * diff), 1.0);
 }
 `;
 
