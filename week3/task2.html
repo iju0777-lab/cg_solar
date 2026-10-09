@@ -480,7 +480,7 @@ function render() {
   camera = M4.multiply(perspective, camera);
 
   // ⑥ 보이는 공간을 -1 ~ 1 로 줄인다 (그냥 크기 조절입니다)
-  camera = M4.multiply(M4.scale(1 / (3.4 * aspect), 1 / 3.4, -1 / 30), camera);
+  camera = M4.multiply(M4.scale(1 / (2.8 * aspect), 1 / 2.8, -1 / 30), camera);
 
   const viewProj = camera;
 
@@ -492,7 +492,7 @@ function render() {
   gl.uniform1i(uPlanetTypeLoc, 0);
 
   const model1 = M4.multiply(
-    M4.translate(-1.8, 0, 0),
+    M4.translate(-2.5, 0, 0),
     M4.rotateY(time * 0.5)
   );
 
@@ -504,7 +504,7 @@ function render() {
   gl.uniform1i(uPlanetTypeLoc, 1);
 
   const model2 = M4.multiply(
-    M4.translate(1.8, 0, 0),
+    M4.translate(2.5, 0, 0),
     M4.rotateY(time * 0.7)
   );
 
@@ -516,7 +516,7 @@ function render() {
   gl.uniform1i(uPlanetTypeLoc, 2);
 
   const ringModel = M4.multiply(
-    M4.translate(-1.8, 0, 0),
+    M4.translate(-2.5, 0, 0),
     M4.rotateX(0.45)
   );
 
