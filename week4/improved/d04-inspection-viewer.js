@@ -51,13 +51,13 @@
   let started=null,last='';
   const api={canvas,gl,model,controls,hidden,drawView,render:null};window.InspectionViewer=api;
   document.querySelector('#home').addEventListener('click',()=>{controls.home();controls.state.actions++;});
-  document.querySelector('#measure').addEventListener('click',()=>{started=performance.now();controls.state.actions=0;});
+  document.querySelector('#measure').addEventListener('click',()=>{started=performance.now();controls.state.actions=1;});
   for(const p of model.tasks){const li=document.createElement('li');const title=document.createElement('strong');title.textContent=p.id+' '+p.name;li.append(title,document.createElement('br'),document.createTextNode(p.task));document.querySelector('#tasks').appendChild(li);}
   D.loop(()=>{
     const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));
     if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
     if(api.render)api.render(api);else drawView(controls.camera());
-    const s=controls.state,value=`기본 트랙볼 · 거리 ${s.distance.toFixed(2)}m · FOV ${s.fov}°\n회전 중심 (${s.target.map(v=>v.toFixed(2)).join(', ')})\n측정 ${started===null?'시작 전':((performance.now()-started)/1000).toFixed(0)+'초'} · 기본 조작 ${s.actions}회`;
+    const s=controls.state,value=`관찰 카메라 · 거리 ${s.distance.toFixed(2)}m · FOV ${s.fov}°\n회전 중심 (${s.target.map(v=>v.toFixed(2)).join(', ')})\n측정 ${started===null?'시작 전':((performance.now()-started)/1000).toFixed(0)+'초'} · 전체 조작 ${s.actions}회`;
     if(value!==last){read.textContent=value;last=value;}
   });
 })();

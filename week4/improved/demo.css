@@ -294,3 +294,25 @@ html, body {
   .wrap { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
   .panel { border-left: 0; border-top: 1px solid var(--d-line); max-height: 46vh; }
 }
+
+/* 관찰 선택 및 동일 월드 배율 비교 안내 */
+.observation-button{margin:8px 0 4px;text-align:left;min-height:36px}
+.observation-button[aria-pressed="true"]{background:var(--d-accent-soft);border-color:var(--d-accent);color:var(--d-accent)}
+.completion{display:flex;gap:7px;align-items:center;margin-top:5px;font-size:12px}
+.completion input{accent-color:var(--d-accent)}
+.comparison-grid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.comparison-grid line{stroke:var(--d-axis);stroke-width:1;opacity:.28}
+.comparison-grid .reference{stroke:var(--d-accent);stroke-width:2;stroke-dasharray:6 4;opacity:.8}
+.comparison-grid text{fill:var(--d-ink);stroke:var(--d-canvas);stroke-width:4;paint-order:stroke;font:12px sans-serif}
+.btn:focus-visible{outline:2px solid var(--d-accent);outline-offset:2px}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* 핵심 탐색 기능을 스크롤 없이 먼저 노출한다. */
+#student-ui h2{font-size:13px;color:var(--d-ink);margin:12px 0 7px}
+.point-navigation{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.point-navigation .btn{margin:0;min-height:52px;font-size:12px;padding:9px}
+.compare-navigation{display:grid;gap:7px}
+.compare-navigation .btn{margin:0;min-height:40px;background:var(--d-accent-soft);font-size:12px}
+#student-ui>.note{margin:12px 0 8px}
+.task-details{border-top:1px solid var(--d-line);padding-top:10px;margin-top:8px}
+.task-details summary{cursor:pointer;font-weight:600;color:var(--d-ink)}

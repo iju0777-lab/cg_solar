@@ -24,7 +24,7 @@ window.InspectionControls = function(canvas) {
   canvas.addEventListener('pointermove',e=>{
     if(!drag || drag.id!==e.pointerId)return;
     if(drag.pan){
-      const r=canvas.getBoundingClientRect(),unit=2*state.distance*Math.tan(state.fov*Math.PI/360)/r.height;
+      const r=canvas.getBoundingClientRect(),unit=2*(state.panHalfHeight ?? state.distance*Math.tan(state.fov*Math.PI/360))/r.height;
       const right=rotate(drag.q,[1,0,0]),up=rotate(drag.q,[0,1,0]);
       state.target=drag.target.map((v,i)=>v-(e.clientX-drag.x)*unit*right[i]+(e.clientY-drag.y)*unit*up[i]);
     }else{
@@ -39,7 +39,7 @@ window.InspectionControls = function(canvas) {
   canvas.addEventListener('wheel',e=>{e.preventDefault();state.distance=Math.max(.12,Math.min(100,state.distance*Math.exp(e.deltaY*.001)));state.actions++;},{passive:false});
   canvas.addEventListener('keydown',e=>{
     if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-','Home'].includes(e.key))return;e.preventDefault();state.actions++;
-    if(e.key==='Home'){home();return;}
+    if(e.key==='Home'){window.InspectionViewer?.controls.home();return;}
     if(e.key==='+')state.distance=Math.max(.12,state.distance/1.12);
     else if(e.key==='-')state.distance=Math.min(100,state.distance*1.12);
     else {const h=e.key==='ArrowLeft'?.06:e.key==='ArrowRight'?-.06:0,v=e.key==='ArrowUp'?.06:e.key==='ArrowDown'?-.06:0;state.rotation=normalize(mul(state.rotation,normalize([v,h,0,1])));}
