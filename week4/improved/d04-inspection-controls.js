@@ -12,7 +12,8 @@ window.InspectionControls = function(canvas) {
   const state={target:[3,3,0],distance:30,rotation:[0,0,0,1],fov:45,actions:0};
   function home(){state.target=[3,3,0];state.distance=30;state.rotation=normalize(mul([0,Math.sin(.3),0,Math.cos(.3)],[Math.sin(-.22),0,0,Math.cos(.22)]));state.fov=45;}
   home();
-  function sphere(e){const r=canvas.getBoundingClientRect(),s=Math.min(r.width,r.height),x=(2*(e.clientX-r.left)-r.width)/s,y=(r.height-2*(e.clientY-r.top))/s,d=x*x+y*y;return d<=1?[x,y,Math.sqrt(1-d)]:normalize([x,y,0]);}
+  function inputRect(){const r=canvas.getBoundingClientRect();return {left:r.left,top:r.top,width:r.width*(state.viewportWidthRatio||1),height:r.height};}
+  function sphere(e){const r=inputRect(),s=Math.min(r.width,r.height),x=(2*(e.clientX-r.left)-r.width)/s,y=(r.height-2*(e.clientY-r.top))/s,d=x*x+y*y;return d<=1?[x,y,Math.sqrt(1-d)]:normalize([x,y,0]);}
   let drag=null;
   canvas.style.touchAction='none';
   canvas.addEventListener('contextmenu',e=>e.preventDefault());
@@ -24,7 +25,7 @@ window.InspectionControls = function(canvas) {
   canvas.addEventListener('pointermove',e=>{
     if(!drag || drag.id!==e.pointerId)return;
     if(drag.pan){
-      const r=canvas.getBoundingClientRect(),unit=2*(state.panHalfHeight ?? state.distance*Math.tan(state.fov*Math.PI/360))/r.height;
+      const r=inputRect(),unit=2*(state.panHalfHeight ?? state.distance*Math.tan(state.fov*Math.PI/360))/r.height;
       const right=rotate(drag.q,[1,0,0]),up=rotate(drag.q,[0,1,0]);
       state.target=drag.target.map((v,i)=>v-(e.clientX-drag.x)*unit*right[i]+(e.clientY-drag.y)*unit*up[i]);
     }else{

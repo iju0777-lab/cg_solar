@@ -33,6 +33,15 @@
   const hidden=new Set();
   function drawMesh(mesh,m,color,text=false){gl.uniformMatrix4fv(U.uModel,false,m);gl.uniformMatrix3fv(U.uNormal,false,M.normalFrom(m));gl.uniform3fv(U.uColor,color);gl.uniform1i(U.uText,text?1:0);gl.bindVertexArray(mesh.vao);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_SHORT,0);}
   // viewport: 그리기 버퍼의 픽셀 좌표 [x,y,width,height]. 원점은 왼쪽 아래입니다.
+  // Optional selection frame uses four narrow boxes outside the original sign.
+  function drawHighlight(p){
+    const margin=Math.max(.035,Math.min(...p.size)*.16),thickness=margin*.32;
+    const width=p.size[0]+2*margin,height=p.size[1]+2*margin;
+    for(const [x,y,w,h] of [[0,height/2,width,thickness],[0,-height/2,width,thickness],[-width/2,0,thickness,height],[width/2,0,thickness,height]]){
+      const m=matrix(p.position,[1,1,1],p.yaw);M.translate(m,m,[x,y,.008]);M.scale(m,m,[w,h,.006]);
+      drawMesh(cube,m,[1,.72,.05]);
+    }
+  }
   function drawView(camera,viewport=[0,0,canvas.width,canvas.height]){
     const [x,y,w,h]=viewport;if(w<=0||h<=0)return;
     gl.viewport(x,y,w,h);gl.enable(gl.SCISSOR_TEST);gl.scissor(x,y,w,h);D.clearColor(gl);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.disable(gl.SCISSOR_TEST);
@@ -46,6 +55,8 @@
     for(const s of signs)if(!hidden.has(s.id)&&!hidden.has(s.group)){
       drawMesh(plane,s.matrix,[.25,.28,.32]);gl.enable(gl.CULL_FACE);gl.depthFunc(gl.LEQUAL);gl.bindTexture(gl.TEXTURE_2D,s.texture);drawMesh(plane,s.matrix,[1,1,1],true);gl.depthFunc(gl.LESS);gl.disable(gl.CULL_FACE);
     }
+    if(camera.highlight)drawHighlight(camera.highlight);
+    return new Float32Array(vp);
   }
   gl.enable(gl.DEPTH_TEST);
   let started=null,last='';
