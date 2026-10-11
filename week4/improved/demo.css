@@ -316,3 +316,12 @@ html, body {
 #student-ui>.note{margin:12px 0 8px}
 .task-details{border-top:1px solid var(--d-line);padding-top:10px;margin-top:8px}
 .task-details summary{cursor:pointer;font-weight:600;color:var(--d-ink)}
+
+/* Reserved minimap rail keeps the inset away from the main observation. */
+.minimap{position:absolute;right:0;top:0;bottom:0;z-index:2;padding:8px;background:transparent;border-left:1px solid var(--d-line);box-sizing:border-box}
+.minimap:has(.minimap-surface[hidden]){bottom:auto;border-bottom:1px solid var(--d-line)}
+.minimap-toggle{margin:0 0 8px;min-height:36px;font-size:11px}
+.minimap-surface{position:relative;width:100%;aspect-ratio:1.15;border:1px solid var(--d-line-strong);pointer-events:none}
+.minimap-marker{position:absolute;transform:translate(-50%,-50%);border:2px solid #fff;border-radius:50%;background:#b74300;color:#fff;font:bold 11px sans-serif;min-width:27px;height:27px;display:grid;place-items:center;box-shadow:0 0 0 2px #b74300;pointer-events:none}
+.minimap-marker[hidden],.minimap-surface[hidden],.minimap-caption[hidden]{display:none}
+.minimap-caption{font-size:11px;text-align:center;color:var(--d-ink);margin:8px 0}
