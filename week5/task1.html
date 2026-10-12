@@ -139,8 +139,9 @@ void main() {
   //  처럼 바꿉니다.
   // ──────────────────────────────────────────────────────────────────────
 
-  vec3 diffuse = dot(N, L) * uBaseColor * uLightColor;
-  fragColor = vec4(diffuse, 1.0);
+  vec3 diffuse = max(dot(N, L), 0.0) * uBaseColor * uLightColor;
+  vec3 ambient = 0.08 * uBaseColor;
+  fragColor = vec4(ambient + diffuse, 1.0);
 }
 `;
 
