@@ -129,7 +129,7 @@ void main() {
       pointSpecular = pow(max(dot(R, V), 0.0), uShininess)
                     * uPointColor * uSpecularStrength;
     }
-    att = 1.0 / (1.0 + 0.02 * d * d);
+    att = 1.0 / (1.0 + 0.08 * d * d);
   }
   if (uDirOn) {
     // 광원 쪽 방향. 빛의 진행 방향은 이 벡터의 반대이다.
