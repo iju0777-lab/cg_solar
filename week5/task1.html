@@ -91,7 +91,7 @@ void main() {
   vWorldPos  = world.xyz;
 
   // ★ 단계 5 — 아래 한 줄을  vNormal = uNormalMat * aNormal;  로 바꾼다
-  vNormal = mat3(uModel) * aNormal;
+  vNormal = uNormalMat * aNormal;
 
   gl_Position = uProj * uView * world;
 }
