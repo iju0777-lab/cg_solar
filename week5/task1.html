@@ -156,8 +156,6 @@ void main() {
   
   float d   = length(uLightPos - vWorldPos); //광원과 현재 픽셀 사이 거리
   float att = 1.0 / (1.0 + 0.02 * d * d); //거리 감쇠값, 멀어질수록 att가 작아져 빛이 약해짐.
-  float d = length(uLightPos - vWorldPos);
-  float att = 1.0 / (1.0 + 0.02 * d * d);
 
   fragColor = vec4(ambient + (diffuse + specular) * att * spot, 1.0);
   
