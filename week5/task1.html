@@ -122,7 +122,7 @@ void main() {
   }
 
   vec3 N = normalize(vNormal);                    // 표면이 향하는 방향
-  vec3 L = normalize(uLightPos - vWorldPos);      // 광원 쪽 방향
+  vec3 L = normalize(vec3(0.4, 0.8, 0.5));        // 광원 쪽 방향
   vec3 V = normalize(uViewPos  - vWorldPos);      // 눈 쪽 방향
 
   // ──────────────────────────────────────────────────────────────────────
@@ -147,8 +147,8 @@ void main() {
   
   float d   = length(uLightPos - vWorldPos); //광원과 현재 픽셀 사이 거리
   float att = 1.0 / (1.0 + 0.02 * d * d); //거리 감쇠값, 멀어질수록 att가 작아져 빛이 약해짐.
-  fragColor = vec4(ambient + (diffuse + specular) * att, 1.0);
-  
+  fragColor = vec4(ambient + diffuse + specular, 1.0);
+
   }
 `;
 
