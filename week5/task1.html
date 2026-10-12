@@ -140,7 +140,7 @@ void main() {
   // ──────────────────────────────────────────────────────────────────────
 
   vec3 diffuse = max(dot(N, L), 0.0) * uBaseColor * uLightColor;
-  vec3 ambient = 0.08 * uBaseColor;
+  vec3 ambient = 0.4 * uBaseColor;
   fragColor = vec4(ambient + diffuse, 1.0);
 }
 `;
