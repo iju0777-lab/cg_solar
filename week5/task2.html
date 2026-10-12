@@ -84,7 +84,7 @@ void main() {
   vec4 world = uModel * vec4(aPos, 1.0);
   vWorldPos  = world.xyz;
 
-  // ★ 단계 5 — 아래 한 줄을  vNormal = uNormalMat * aNormal;  로 바꾼다
+  // 모델의 역전치로 법선을 월드 좌표계로 변환한다
   vNormal = uNormalMat * aNormal;
 
   gl_Position = uProj * uView * world;
@@ -114,7 +114,7 @@ void main() {
   vec3 N = normalize(vNormal);
   vec3 V = normalize(uViewPos - vWorldPos);
   // 환경광은 한 번만 더하고, 개별 광원의 감쇠를 적용하지 않는다.
-  vec3 ambient = 0.10 * baseColor * vec3(0.65, 0.80, 1.0);
+  vec3 ambient = 0.06 * baseColor * vec3(0.65, 0.80, 1.0);
   vec3 pointDiffuse = vec3(0.0), pointSpecular = vec3(0.0);
   vec3 dirDiffuse = vec3(0.0), dirSpecular = vec3(0.0);
   float att = 1.0;
@@ -366,8 +366,8 @@ function render() {
   gl.uniformMatrix4fv(U.uProj, false, proj);
   gl.uniform3fv(U.uPointPos, lightPos);
   gl.uniform3f(U.uPointColor, 2.5, 1.05, 0.35);
-  gl.uniform3f(U.uDirToLight, 0.6, 1.0, -0.4);
-  gl.uniform3f(U.uDirColor, 0.16, 0.25, 0.38);
+  gl.uniform3f(U.uDirToLight, 0.9, 1.0, 0.2);
+  gl.uniform3f(U.uDirColor, 0.18, 0.28, 0.42);
   gl.uniform1i(U.uPointOn, lights.point ? 1 : 0);
   gl.uniform1i(U.uDirOn, lights.directional ? 1 : 0);
   gl.uniform3fv(U.uViewPos, eye);
@@ -388,11 +388,11 @@ function render() {
 
   // 광원 위치 표시 — 스스로 빛나는 물체
   let ml = Mat4.multiply(Mat4.translate(lightPos[0], lightPos[1], lightPos[2]),
-                         Mat4.scale(0.46, 0.46, 0.46));
+                         Mat4.scale(0.26, 0.26, 0.26));
   if (lights.point) draw(sphere, ml, [1.0, 0.48, 0.15], 1, true);
   // Directional에는 위치가 없다. 이 구는 광원 방향을 알려주는 표시이다.
   if (lights.directional) {
-    const md = Mat4.multiply(Mat4.translate(3.0, 6.0, -2.0), Mat4.scale(0.16, 0.16, 0.16));
+    const md = Mat4.multiply(Mat4.translate(3.2, 3.8, 0.7), Mat4.scale(0.16, 0.16, 0.16));
     draw(sphere, md, [0.25, 0.55, 1.0], 1, true);
   }
 
