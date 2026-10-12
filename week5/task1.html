@@ -347,8 +347,8 @@ function render() {
   const proj = Mat4.perspective(Math.PI / 4, canvas.width / canvas.height, 0.1, 200);
 
   // 광원 — 장면 위를 천천히 돈다
-  const lightPos = [Math.cos(t * 0.4) * 5.0, 3.6, Math.sin(t * 0.4) * 5.0];
-
+  const lightPos = [3.0, 5.0, 0.0];
+  
   gl.useProgram(program);                       // ← uniform 을 넣기 전에 반드시 먼저!
   gl.uniformMatrix4fv(U.uView, false, view);
   gl.uniformMatrix4fv(U.uProj, false, proj);
@@ -373,7 +373,7 @@ function render() {
   // 광원 위치 표시 — 스스로 빛나는 물체
   let ml = Mat4.multiply(Mat4.translate(lightPos[0], lightPos[1], lightPos[2]),
                          Mat4.scale(0.22, 0.22, 0.22));
-  //draw(sphere, ml, [1.0, 0.93, 0.62], 1, true);
+  draw(sphere, ml, [1.0, 0.93, 0.62], 1, true);
 
   gl.bindVertexArray(null);
   requestAnimationFrame(render);
