@@ -373,7 +373,7 @@ function render() {
   // 광원 위치 표시 — 스스로 빛나는 물체
   let ml = Mat4.multiply(Mat4.translate(lightPos[0], lightPos[1], lightPos[2]),
                          Mat4.scale(0.22, 0.22, 0.22));
-  draw(sphere, ml, [1.0, 0.93, 0.62], 1, true);
+  //draw(sphere, ml, [1.0, 0.93, 0.62], 1, true);
 
   gl.bindVertexArray(null);
   requestAnimationFrame(render);
