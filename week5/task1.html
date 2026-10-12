@@ -147,6 +147,17 @@ void main() {
   
   float d   = length(uLightPos - vWorldPos); //광원과 현재 픽셀 사이 거리
   float att = 1.0 / (1.0 + 0.02 * d * d); //거리 감쇠값, 멀어질수록 att가 작아져 빛이 약해짐.
+
+  vec3 spotDir = vec3(0.0, -1.0, 0.0);      //광원에서 아래로 빛을 쏘는 방향
+  float cosInner = cos(radians(15.0));      //원뿔 축에서 15도까지 그대로, 25도부터 빛이 0이 되도록
+  float cosOuter = cos(radians(25.0));
+
+  float c = dot(-L, normalize(spotDir));
+  att *= clamp(
+      (c - cosOuter) / (cosInner - cosOuter),
+      0.0, 1.0
+  );
+  
   fragColor = vec4(ambient + (diffuse + specular) * att, 1.0);
 
   }
