@@ -93,9 +93,11 @@ vNormal = uNormalMat * aNormal;
 
 Point 광원은 한 위치에서 모든 방향으로 빛을 보내므로 바닥의 밝기가 위치와 거리에 따라 달라졌다. Directional 광원은 모든 표면에 같은 방향으로 빛이 들어오고 거리 감쇠를 적용하지 않아 바닥의 확산광이 균일하게 나타났다. Spot 광원은 Point 광원에 원뿔 형태의 조사 범위를 추가하여 광원 아래의 바닥에 밝은 원형 영역을 형성하였다. 안쪽 15°에서 바깥쪽 25°까지 `clamp()`를 이용해 빛의 세기를 선형으로 감소시켜 조명 경계를 부드럽게 처리하였으며, 원뿔 밖의 물체와 바닥에는 환경광만 남도록 하였다. 최종 Spot 광원은 `(3.0, 5.0, 0.0)` 위치에 고정하여 원형 조명 영역을 확인하였다.
 
-![Directional 광원](images/07.%20task1_directional.png)
+![Point 광원](images/07.%20task1_point.png)
 
-![Spot 광원](images/08.%20task1_spot.png)
+![Directional 광원](images/08.%20task1_directional.png)
+
+![Spot 광원](images/09.%20task1_spot.png)
 
 ### 1.6 실습 1 최종 구현
 
