@@ -1,7 +1,6 @@
-/* 6주차 실습 1 시작 코드. TODO 1~5를 직접 작성하여 완성하세요.
- * 비교 예제 d06-materials.js는 정답을 확인하는 참고 자료입니다.
- * Copilot에 각 TODO와 week06.md 수식을 읽히고 코드를 제안받아도 됩니다.
- * 각 단계에서 무엇이 왜 달라졌는지 직접 화면으로 검증하세요.
+/* 6주차 실습 2: Crackworld — 단계 1, 태양과 자전하는 암석 행성.
+ * 6주차 실습 1의 PBR(D/F/G), 색/ARM/normal/환경맵 재질 계산을 유지.
+ * 뒤 단계에서 태양 거리와 화산 활동에 따른 마스크 2개를 연결한다.
  */
 (() => {
 'use strict';
@@ -10,15 +9,23 @@ const VS=`#version 300 es
 layout(location=0) in vec3 aPos;
 layout(location=1) in vec3 aNormal;
 layout(location=2) in vec2 aUV;
-uniform mat4 uVP;
-out vec3 vP,vN; out vec2 vUV;
-void main(){vP=aPos;vN=aNormal;vUV=aUV;gl_Position=uVP*vec4(aPos,1.);}`;
+uniform mat4 uVP, uModel;
+out vec3 vP,vN,vLocal; out vec2 vUV;
+void main(){
+ vec4 world = uModel * vec4(aPos,1.0);
+ vP = world.xyz;
+ vN = mat3(transpose(inverse(uModel))) * aNormal;
+ vLocal = aPos;
+ vUV = aUV;
+ gl_Position = uVP * world;
+}`;
 const FS=`#version 300 es
 precision highp float;
 const float PI=3.14159265;
-in vec3 vP,vN; in vec2 vUV; out vec4 outColor;
+in vec3 vP,vN,vLocal; in vec2 vUV; out vec4 outColor;
 uniform sampler2D uColor,uNormal,uARM,uEnv;
-uniform vec3 uEye,uLight,uTint;
+uniform vec3 uEye,uLightPos,uTint,uEmissionColor;
+uniform bool uEmissive;
 uniform float uRough,uMetal,uNormalStrength,uPower,uAmbient,uEnvPower;
 
 vec3 srgbToLinear(vec3 c){
@@ -59,7 +66,13 @@ vec3 directPBR(vec3 N,vec3 V,vec3 L,vec3 base,float rough,float metal){
 }
 
 void main(){
- vec3 N=normalize(vN),V=normalize(uEye-vP),L=normalize(uLight);
+ // 태양은 자체 발광하는 표시 구. 주변 표면은 별도 PBR 계산으로 비춘다.
+ if (uEmissive) {
+  vec3 glow = uEmissionColor / (vec3(1.0) + uEmissionColor);
+  outColor = vec4(linearToSrgb(glow), 1.0);
+  return;
+ }
+ vec3 N=normalize(vN),V=normalize(uEye-vP),L=normalize(uLightPos-vP);
  vec3 base=uTint;
  base = srgbToLinear(texture(uColor, vUV).rgb) * uTint;
 // TODO 1: texture(uColor,vUV).rgb를 읽어 선형화하고 base에 사용하세요.
@@ -114,10 +127,12 @@ void main(){
  outColor=vec4(linearToSrgb(color),1.0);
 }`;
 const prog=D.program(gl,VS,FS),U=D.uniforms(gl,prog,[
- 'uVP','uEye','uLight','uTint','uRough','uMetal','uNormalStrength','uPower','uAmbient','uEnvPower',
+ 'uVP','uModel','uEye','uLightPos','uTint','uEmissionColor','uEmissive',
+ 'uRough','uMetal','uNormalStrength','uPower','uAmbient','uEnvPower',
  'uColor','uNormal','uARM','uEnv'
 ]);
-const mesh=D.upload(gl,D.cube(1.9));
+// 교수님 공용 도구의 위치/법선/UV를 모두 가진 구형 메시.
+const sphere = D.upload(gl, D.revolution(D.profiles.sphere(1,48),64));
 const assets={wood_planks:['Diffuse','nor_gl','arm'],rusty_metal_04:['Diffuse','nor_gl','arm'],rock_boulder_dry:['Diffuse','nor_gl','arm']};
 const textures={},jobs=[];let failed=false;
 function load(name){
@@ -136,10 +151,10 @@ function load(name){
 }
 for(const [asset,kinds] of Object.entries(assets))textures[asset]=kinds.map(kind=>load(asset+'_'+kind));
 const envTex=load('studio_small_09_tonemapped');
-Promise.all(jobs).then(()=>{document.querySelector('#status').textContent=failed?'텍스처 로딩 실패: HTTP 서버와 파일 경로 확인':'텍스처 로딩 완료 · task1.js의 TODO 1부터 작성하세요';});
+Promise.all(jobs).then(()=>{document.querySelector('#status').textContent=failed?'텍스처 로딩 실패: HTTP 서버와 파일 경로 확인':'텍스처 로딩 완료 · 6주차 실습 2: 태양과 자전하는 행성';});
 document.querySelector('#ui').innerHTML='';
 const S=D.UI('#ui',[
- {id:'material',type:'select',label:'재질 선택',value:'rusty_metal_04',options:[
+ {id:'material',type:'select',label:'기본 행성 표면',value:'rock_boulder_dry',options:[
   {value:'rusty_metal_04',label:'녹슨 금속'},{value:'wood_planks',label:'나무'},{value:'rock_boulder_dry',label:'돌'}]},
  {id:'rough',label:'roughness 배율',min:.05,max:1,step:.01,value:1},
  {id:'metal',label:'metallic 배율',min:0,max:1,step:.01,value:1},
@@ -149,21 +164,63 @@ const S=D.UI('#ui',[
  {id:'env',label:'환경맵 반사 세기',min:0,max:3,step:.1,value:1.5},
 ]);
 
-const cam=D.orbit(cv,{dist:3.7,pitch:.15});document.querySelector('#reset').onclick=()=>{cam.dist=3.7;cam.yaw=0;cam.pitch=.15;};
-const view=D.M4.create(),proj=D.M4.create(),vp=D.M4.create();
-document.querySelector('#note').textContent='시작 코드: 회색 큐브와 Phong 조명만 작동합니다. task1.js의 TODO 1~5를 직접 채우세요.';
-let visible=true;new IntersectionObserver(e=>visible=e[0].isIntersecting).observe(cv);
-D.loop(()=>{
+const cam=D.orbit(cv,{dist:9.0,pitch:.18,yaw:.4,min:4,max:25});
+document.querySelector('#reset').onclick=()=>{
+ cam.dist=9.0; cam.yaw=.4; cam.pitch=.18;
+};
+const view=D.M4.create(), proj=D.M4.create(), vp=D.M4.create();
+const planetModel=D.M4.create(), sunModel=D.M4.create();
+const sunPos=[-3.7,1.0,0.0];
+const startTime=performance.now()*0.001;
+document.querySelector('#note').textContent=
+ 'Crackworld · 1단계: 왼쪽의 태양이 빛을 내며, 바위 행성이 자전합니다. 이후 태양 거리와 화산 활동 마스크를 추가할 예정입니다.';
+let visible=true;
+new IntersectionObserver(e=>visible=e[0].isIntersecting).observe(cv);
+D.loop((seconds)=>{
  if(!visible||document.hidden)return;
- D.fit(cv);gl.viewport(0,0,cv.width,cv.height);D.clearColor(gl);gl.enable(gl.DEPTH_TEST);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
- const eye=cam.eye([0,0,0]);D.M4.lookAt(view,eye,[0,0,0],[0,1,0]);D.M4.perspective(proj,Math.PI/4,cv.width/cv.height,.1,100);D.M4.multiply(vp,proj,view);
- gl.useProgram(prog);gl.uniformMatrix4fv(U.uVP,false,vp);gl.uniform3fv(U.uEye,eye);
- gl.uniform3fv(U.uLight,[.6,.7,1.]);gl.uniform3fv(U.uTint,[1.0,1.0,1.0]);
- for(const [key,value] of Object.entries({uRough:S.rough,uMetal:S.metal,uNormalStrength:S.normal,uPower:S.power,uAmbient:S.ambient,uEnvPower:S.env}))gl.uniform1f(U[key],value);
+ D.fit(cv);
+ gl.viewport(0,0,cv.width,cv.height);
+ gl.clearColor(.012,.018,.037,1.0); // 우주 배경
+ gl.enable(gl.DEPTH_TEST);
+ gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+ const t=seconds-startTime;
+ const eye=cam.eye([-.65,0,0]);
+ D.M4.lookAt(view,eye,[-.65,0,0],[0,1,0]);
+ D.M4.perspective(proj,Math.PI/4,cv.width/cv.height,.1,100);
+ D.M4.multiply(vp,proj,view);
+
+ gl.useProgram(prog);
+ gl.uniformMatrix4fv(U.uVP,false,vp);
+ gl.uniform3fv(U.uEye,eye);
+ gl.uniform3fv(U.uLightPos,sunPos);
+ for(const [key,value] of Object.entries({
+  uRough:S.rough,uMetal:S.metal,uNormalStrength:S.normal,
+  uPower:S.power,uAmbient:S.ambient,uEnvPower:S.env
+ })) gl.uniform1f(U[key],value);
  [...textures[S.material],envTex].forEach((tex,i)=>{
-  gl.activeTexture(gl.TEXTURE0+i);gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.activeTexture(gl.TEXTURE0+i);
+  gl.bindTexture(gl.TEXTURE_2D,tex);
   gl.uniform1i(U[['uColor','uNormal','uARM','uEnv'][i]],i);
  });
- gl.bindVertexArray(mesh.vao);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_SHORT,0);gl.bindVertexArray(null);
+
+ // 행성: 로컬 좌표계에서 자전 → 모델 행렬로 월드 좌표계에 배치.
+ D.M4.identity(planetModel);
+ D.M4.rotateY(planetModel,planetModel,t*.25);
+ D.M4.scale(planetModel,planetModel,[1.48,1.48,1.48]);
+ gl.uniformMatrix4fv(U.uModel,false,planetModel);
+ gl.uniform3fv(U.uTint,[.80,.55,.50]);
+ gl.uniform1i(U.uEmissive,0);
+ gl.bindVertexArray(sphere.vao);
+ gl.drawElements(gl.TRIANGLES,sphere.count,gl.UNSIGNED_SHORT,0);
+
+ // 태양: 자체발광. uLightPos와 같은 위치에 그린다.
+ D.M4.identity(sunModel);
+ D.M4.translate(sunModel,sunModel,sunPos);
+ D.M4.scale(sunModel,sunModel,[.72,.72,.72]);
+ gl.uniformMatrix4fv(U.uModel,false,sunModel);
+ gl.uniform3fv(U.uEmissionColor,[6.0,2.2,.32]);
+ gl.uniform1i(U.uEmissive,1);
+ gl.drawElements(gl.TRIANGLES,sphere.count,gl.UNSIGNED_SHORT,0);
+ gl.bindVertexArray(null);
 });
 })();
