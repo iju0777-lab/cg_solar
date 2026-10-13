@@ -66,6 +66,10 @@ void main(){
  // 수치 맵에는 sRGB 변환을 적용하지 마세요.
 
  float rough=uRough,metal=uMetal,ao=1.0;
+ vec3 arm = texture(uARM, vUV).rgb;
+ ao = arm.r;
+ rough = max(arm.g * uRough, 0.045);
+ metal = arm.b * uMetal;
  // TODO 3: uARM의 R(AO), G(roughness), B(metallic)를 읽으세요.
  // 슬라이더 uRough/uMetal은 맵 값에 곱하는 배율입니다.
 
