@@ -102,6 +102,13 @@ void main(){
  // 금속에서 정반사색은 base, 유전체의 정면 반사율은 약 0.04입니다.
  // 이미지 밝기 uEnvPower와 상수 ambient uAmbient는 별개로 유지하세요.
 
+ vec3 reflected = reflect(-V,N);
+ vec2 envUV = vec2(atan(reflected.z,reflected.x)/(2.0*PI)+0.5,
+                  asin(clamp(reflected.y,-1.0,1.0))/PI+0.5);
+ vec3 envColor = srgbToLinear(textureLod(uEnv,envUV,rough*7.0).rgb);
+ vec3 envF0 = mix(vec3(0.04),base,metal);
+ color += uEnvPower * ao * envColor * envF0;
+
  color=max(color,vec3(0.0));
  color=color/(1.0+color); // HDR → 표시 범위
  outColor=vec4(linearToSrgb(color),1.0);
