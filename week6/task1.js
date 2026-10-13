@@ -37,8 +37,8 @@ vec3 directPBR(vec3 N,vec3 V,vec3 L,vec3 base,float rough,float metal){
 void main(){
  vec3 N=normalize(vN),V=normalize(uEye-vP),L=normalize(uLight);
  vec3 base=uTint;
- base = srgbToLinear(texture(uColor, vUV).rgb) * uTint;
- // TODO 1: texture(uColor,vUV).rgb를 읽어 선형화하고 base에 사용하세요.
+ base = vec3(1.0, 0.0, 0.0);
+// TODO 1: texture(uColor,vUV).rgb를 읽어 선형화하고 base에 사용하세요.
  // 수치 맵에는 sRGB 변환을 적용하지 마세요.
 
  float rough=uRough,metal=uMetal,ao=1.0;
