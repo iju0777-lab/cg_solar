@@ -27,6 +27,8 @@ uniform sampler2D uColor,uNormal,uARM,uEnv;
 uniform vec3 uEye,uLightPos,uTint,uEmissionColor;
 uniform bool uEmissive;
 uniform float uRough,uMetal,uNormalStrength,uPower,uAmbient,uEnvPower;
+uniform float uSolarLevel,uVolcanoLevel;
+uniform int uViewMode; // 0=결과, 1=기본 표면, 2=태양 마스크, 3=화산 마스크
 
 vec3 srgbToLinear(vec3 c){
  return mix(c/12.92,pow((c+.055)/1.055,vec3(2.4)),step(vec3(.04045),c));
@@ -105,6 +107,38 @@ void main(){
     N = normalize(mat3(T*inv, B*inv, N)*normalize(mapN));
 }
 
+ // 행성 로컬 좌표에서 계산하여 자전해도 마스크가 표면에 고정된다.
+ // ① 태양 조건: 사인 곡선의 작은 값들을 가느다란 균열로 간주한다.
+ float lineA=abs(sin(19.0*vLocal.x+4.0*sin(10.0*vLocal.y+8.0*vLocal.z)));
+ float lineB=abs(sin(19.0*vLocal.z+4.0*sin(7.0*vLocal.y-7.0*vLocal.x)));
+ float fracture=1.0-smoothstep(0.05,0.23,min(lineA,lineB));
+ float heatZone=0.5+0.5*sin(5.5*vLocal.y+2.3*vLocal.x-3.7*vLocal.z);
+ float solarMask=uSolarLevel*fracture*
+      smoothstep(1.04-0.90*uSolarLevel,1.18-0.90*uSolarLevel,heatZone);
+
+ // ② 독립적인 화산 활동: 면적이 넓은 화산재/화산암 무늬.
+ float ashNoise=0.5
+     +0.25*sin(8.0*vLocal.y+sin(5.0*vLocal.x))
+     +0.25*sin(9.0*vLocal.z-4.0*vLocal.x);
+ float volcanoMask=uVolcanoLevel*
+      smoothstep(1.00-0.75*uVolcanoLevel,
+                 1.17-0.75*uVolcanoLevel,ashNoise);
+
+ // 마스크는 원래 재질/조명의 영향을 받지 않는 흑백 진단 화면.
+ if(uViewMode==2){outColor=vec4(vec3(solarMask),1.0);return;}
+ if(uViewMode==3){outColor=vec4(vec3(volcanoMask),1.0);return;}
+
+ // 기본 표면 보기에서는 두 조건의 재질 변화만 끈다.
+ if(uViewMode!=1){
+   // 뜨거운 균열: 주황색과 낮은 roughness.
+   base=mix(base,vec3(0.31,0.055,0.012),solarMask*0.90);
+   rough=mix(rough,0.13,solarMask);
+   metal=mix(metal,0.08,solarMask);
+   // 화산재: 검은 현무암, 높은 roughness. 겹칠 때 화산재가 우선.
+   base=mix(base,vec3(0.018,0.026,0.038),volcanoMask);
+   rough=mix(rough,0.91,volcanoMask);
+   metal=mix(metal,0.04,volcanoMask);
+ }
  vec3 color = directPBR(N,V,L,base,rough,metal);
  vec3 F0 = mix(vec3(0.04),base,metal);
  color += uAmbient * ao * (base*(1.0-metal)*(1.0-F0)+F0);
@@ -121,6 +155,9 @@ void main(){
  vec3 envColor = srgbToLinear(textureLod(uEnv,envUV,rough*7.0).rgb);
  vec3 envF0 = mix(vec3(0.04),base,metal);
  color += uEnvPower * ao * envColor * envF0;
+ // 균열 내부의 자체발광 색. 물리적인 주변 조명은 태양이 담당한다.
+ if(uViewMode!=1) color += solarMask*(1.0-0.9*volcanoMask)
+                          *vec3(2.0,0.22,0.018);
 
  color=max(color,vec3(0.0));
  color=color/(1.0+color); // HDR → 표시 범위
@@ -129,6 +166,7 @@ void main(){
 const prog=D.program(gl,VS,FS),U=D.uniforms(gl,prog,[
  'uVP','uModel','uEye','uLightPos','uTint','uEmissionColor','uEmissive',
  'uRough','uMetal','uNormalStrength','uPower','uAmbient','uEnvPower',
+ 'uSolarLevel','uVolcanoLevel','uViewMode',
  'uColor','uNormal','uARM','uEnv'
 ]);
 // 교수님 공용 도구의 위치/법선/UV를 모두 가진 구형 메시.
@@ -154,6 +192,14 @@ const envTex=load('studio_small_09_tonemapped');
 Promise.all(jobs).then(()=>{document.querySelector('#status').textContent=failed?'텍스처 로딩 실패: HTTP 서버와 파일 경로 확인':'텍스처 로딩 완료 · 6주차 실습 2: 태양과 자전하는 행성';});
 document.querySelector('#ui').innerHTML='';
 const S=D.UI('#ui',[
+ {id:'solar',label:'태양 접근도 (0=멀리, 100=가까이)',min:0,max:100,step:1,value:35},
+ {id:'volcano',label:'화산 활동 강도',min:0,max:100,step:1,value:30},
+ {id:'mode',type:'select',label:'화면 모드',value:'result',options:[
+  {value:'result',label:'변화한 표면'},
+  {value:'baseline',label:'기본 표면 (변화 없음)'},
+  {value:'solarMask',label:'마스크 1 · 태양 균열'},
+  {value:'volcanoMask',label:'마스크 2 · 화산암'}]},
+ {id:'spin',type:'check',label:'행성 자전',value:true},
  {id:'material',type:'select',label:'기본 행성 표면',value:'rock_boulder_dry',options:[
   {value:'rusty_metal_04',label:'녹슨 금속'},{value:'wood_planks',label:'나무'},{value:'rock_boulder_dry',label:'돌'}]},
  {id:'rough',label:'roughness 배율',min:.05,max:1,step:.01,value:1},
@@ -171,9 +217,9 @@ document.querySelector('#reset').onclick=()=>{
 const view=D.M4.create(), proj=D.M4.create(), vp=D.M4.create();
 const planetModel=D.M4.create(), sunModel=D.M4.create();
 const sunPos=[-3.7,1.0,0.0];
-const startTime=performance.now()*0.001;
+let lastTime=null,spinAngle=0;
 document.querySelector('#note').textContent=
- 'Crackworld · 1단계: 왼쪽의 태양이 빛을 내며, 바위 행성이 자전합니다. 이후 태양 거리와 화산 활동 마스크를 추가할 예정입니다.';
+ 'Crackworld · 2단계: 태양 접근도는 위치와 균열을 함께 바꾸고, 화산 활동은 검은 암석 마스크를 독립적으로 바꿉니다. 자전을 끈 뒤 각 값을 0/50/100으로 비교하세요.';
 let visible=true;
 new IntersectionObserver(e=>visible=e[0].isIntersecting).observe(cv);
 D.loop((seconds)=>{
@@ -183,7 +229,12 @@ D.loop((seconds)=>{
  gl.clearColor(.012,.018,.037,1.0); // 우주 배경
  gl.enable(gl.DEPTH_TEST);
  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
- const t=seconds-startTime;
+ const delta=lastTime===null?0:Math.min(0.05,Math.max(0,seconds-lastTime));
+ lastTime=seconds;
+ if(S.spin)spinAngle+=delta*.25;
+ const solarLevel=S.solar/100,volcanoLevel=S.volcano/100;
+ const modes={result:0,baseline:1,solarMask:2,volcanoMask:3};
+ const planetX=1.30-2.40*solarLevel; // 태양 쪽으로 이동
  const eye=cam.eye([-.65,0,0]);
  D.M4.lookAt(view,eye,[-.65,0,0],[0,1,0]);
  D.M4.perspective(proj,Math.PI/4,cv.width/cv.height,.1,100);
@@ -193,6 +244,9 @@ D.loop((seconds)=>{
  gl.uniformMatrix4fv(U.uVP,false,vp);
  gl.uniform3fv(U.uEye,eye);
  gl.uniform3fv(U.uLightPos,sunPos);
+ gl.uniform1f(U.uSolarLevel,solarLevel);
+ gl.uniform1f(U.uVolcanoLevel,volcanoLevel);
+ gl.uniform1i(U.uViewMode,modes[S.mode]);
  for(const [key,value] of Object.entries({
   uRough:S.rough,uMetal:S.metal,uNormalStrength:S.normal,
   uPower:S.power,uAmbient:S.ambient,uEnvPower:S.env
@@ -205,7 +259,8 @@ D.loop((seconds)=>{
 
  // 행성: 로컬 좌표계에서 자전 → 모델 행렬로 월드 좌표계에 배치.
  D.M4.identity(planetModel);
- D.M4.rotateY(planetModel,planetModel,t*.25);
+ D.M4.translate(planetModel,planetModel,[planetX,0,0]);
+ D.M4.rotateY(planetModel,planetModel,spinAngle);
  D.M4.scale(planetModel,planetModel,[1.48,1.48,1.48]);
  gl.uniformMatrix4fv(U.uModel,false,planetModel);
  gl.uniform3fv(U.uTint,[.80,.55,.50]);
