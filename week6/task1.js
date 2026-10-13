@@ -77,6 +77,21 @@ void main(){
  // vP와 vUV의 dFdx/dFdy로 TBN을 만들어도 됩니다.
  // uNormalStrength=0이면 기하 법선을 그대로 사용하세요.
 
+ if (uNormalStrength > 0.0) {
+    vec3 dp1 = dFdx(vP), dp2 = dFdy(vP);
+    vec2 du1 = dFdx(vUV), du2 = dFdy(vUV);
+
+    vec3 T = cross(dp2, N)*du1.x + cross(N, dp1)*du2.x;
+    vec3 B = cross(dp2, N)*du1.y + cross(N, dp1)*du2.y;
+
+    float inv = inversesqrt(max(max(dot(T,T), dot(B,B)), 1e-8));
+
+    vec3 mapN = texture(uNormal, vUV).xyz*2.0-1.0;
+    mapN.xy *= uNormalStrength;
+
+    N = normalize(mat3(T*inv, B*inv, N)*normalize(mapN));
+}
+
  vec3 color = directPBR(N,V,L,base,rough,metal);
  vec3 F0 = mix(vec3(0.04),base,metal);
  color += uAmbient * ao * (base*(1.0-metal)*(1.0-F0)+F0);
