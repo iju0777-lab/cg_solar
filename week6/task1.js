@@ -31,7 +31,18 @@ vec3 linearToSrgb(vec3 c){
 // TODO 2: D(GGX), F(Schlick), G(Smith-Schlick)를 계산해
 // 직접광 PBR 결과를 반환하세요. 6주차 3-2절을 참고하세요.
 vec3 directPBR(vec3 N,vec3 V,vec3 L,vec3 base,float rough,float metal){
- return vec3(0.0); // TODO 2: 이 줄을 교체
+    float nv = max(dot(N, V), 0.0);
+    float nl = max(dot(N, L), 0.0);
+    if (nv <= 0.0 || nl <= 0.0) return vec3(0.0);
+
+    vec3 H = normalize(V + L);
+    float r = clamp(rough, 0.045, 1.0);
+    float a = r*r, a2 = a*a;
+
+    // D: GGX 법선 분포
+    float nh = max(dot(N, H), 0.0);
+    float d = nh*nh*(a2-1.0)+1.0;
+    float D = a2 / max(PI*d*d, 1e-7);
 }
 
 void main(){
@@ -49,10 +60,9 @@ void main(){
  // vP와 vUV의 dFdx/dFdy로 TBN을 만들어도 됩니다.
  // uNormalStrength=0이면 기하 법선을 그대로 사용하세요.
 
- float nl=max(dot(N,L),0.0);
- vec3 R=reflect(-L,N);
- vec3 color=base*(uAmbient+uPower*nl)
-           +vec3(0.6)*uPower*pow(max(dot(R,V),0.0),32.0)*step(0.0001,nl);
+ vec3 color = directPBR(N,V,L,base,rough,metal);
+ vec3 F0 = mix(vec3(0.04),base,metal);
+ color += uAmbient * ao * (base*(1.0-metal)*(1.0-F0)+F0);
  // TODO 2: 위의 Phong 두 줄을 directPBR(...) 호출과 ambient로 교체하세요.
  // 환경맵을 끄고 uAmbient=0일 때 직접광만 비교해 보세요.
 
