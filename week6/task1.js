@@ -43,6 +43,19 @@ vec3 directPBR(vec3 N,vec3 V,vec3 L,vec3 base,float rough,float metal){
     float nh = max(dot(N, H), 0.0);
     float d = nh*nh*(a2-1.0)+1.0;
     float D = a2 / max(PI*d*d, 1e-7);
+
+    // F: Schlick 프레넬 반사
+    vec3 F0 = mix(vec3(0.04), base, metal);
+    vec3 F = F0 + (1.0-F0)*pow(1.0-max(dot(H,V),0.0),5.0);
+
+    // G: Smith-Schlick 기하 감쇠
+    float k = (r+1.0)*(r+1.0)/8.0;
+    float G = (nv/(nv*(1.0-k)+k))*(nl/(nl*(1.0-k)+k));
+
+    vec3 specular = D*F*G / max(4.0*nv*nl, 1e-6);
+    vec3 kd = (1.0-F)*(1.0-metal);
+
+    return (kd*base/PI + specular)*nl*uPower;
 }
 
 void main(){
