@@ -1,6 +1,6 @@
-/* 6주차 실습 2: Crackworld — 단계 1, 태양과 자전하는 암석 행성.
- * 6주차 실습 1의 PBR(D/F/G), 색/ARM/normal/환경맵 재질 계산을 유지.
- * 뒤 단계에서 태양 거리와 화산 활동에 따른 마스크 2개를 연결한다.
+/* 6주차 실습 2: Crackworld — 태양열 균열과 화산암·용암 분출.
+ * 실습 1의 PBR(D/F/G), 색/ARM/normal/환경맵 계산을 유지한다.
+ * 3D 노이즈 마스크 둘로 base color와 roughness/metallic을 위치별로 수정한다.
  */
 (() => {
 'use strict';
@@ -67,6 +67,31 @@ vec3 directPBR(vec3 N,vec3 V,vec3 L,vec3 base,float rough,float metal){
     return (kd*base/PI + specular)*nl*uPower;
 }
 
+
+// 3D 값 노이즈: 규칙적인 줄무늬 대신 자연스럽게 휘어진 암석 패턴을 만든다.
+float hash31(vec3 p){
+ p=fract(p*0.1031);
+ p+=dot(p,p.yzx+33.33);
+ return fract((p.x+p.y)*p.z);
+}
+float noise3(vec3 x){
+ vec3 i=floor(x), f=fract(x);
+ f=f*f*(3.0-2.0*f);
+ float n000=hash31(i+vec3(0,0,0));
+ float n100=hash31(i+vec3(1,0,0));
+ float n010=hash31(i+vec3(0,1,0));
+ float n110=hash31(i+vec3(1,1,0));
+ float n001=hash31(i+vec3(0,0,1));
+ float n101=hash31(i+vec3(1,0,1));
+ float n011=hash31(i+vec3(0,1,1));
+ float n111=hash31(i+vec3(1,1,1));
+ return mix(
+   mix(mix(n000,n100,f.x),mix(n010,n110,f.x),f.y),
+   mix(mix(n001,n101,f.x),mix(n011,n111,f.x),f.y),
+   f.z
+ );
+}
+
 void main(){
  // 태양은 자체 발광하는 표시 구. 주변 표면은 별도 PBR 계산으로 비춘다.
  if (uEmissive) {
@@ -107,37 +132,56 @@ void main(){
     N = normalize(mat3(T*inv, B*inv, N)*normalize(mapN));
 }
 
- // 행성 로컬 좌표에서 계산하여 자전해도 마스크가 표면에 고정된다.
- // ① 태양 조건: 사인 곡선의 작은 값들을 가느다란 균열로 간주한다.
- float lineA=abs(sin(19.0*vLocal.x+4.0*sin(10.0*vLocal.y+8.0*vLocal.z)));
- float lineB=abs(sin(19.0*vLocal.z+4.0*sin(7.0*vLocal.y-7.0*vLocal.x)));
- float fracture=1.0-smoothstep(0.05,0.23,min(lineA,lineB));
- float heatZone=0.5+0.5*sin(5.5*vLocal.y+2.3*vLocal.x-3.7*vLocal.z);
- float solarMask=uSolarLevel*fracture*
-      smoothstep(1.04-0.90*uSolarLevel,1.18-0.90*uSolarLevel,heatZone);
+ // 행성 로컬 좌표 기반 3D 노이즈: 자전해도 무늬가 표면에 고정된다.
+ vec3 p=normalize(vLocal);
+ vec3 warped=p*6.2+0.70*vec3(
+   noise3(p*3.5+vec3(1.2,3.4,5.1)),
+   noise3(p*3.5+vec3(7.8,2.6,1.3)),
+   noise3(p*3.5+vec3(3.1,8.4,6.2))
+ );
 
- // ② 독립적인 화산 활동: 면적이 넓은 화산재/화산암 무늬.
- float ashNoise=0.5
-     +0.25*sin(8.0*vLocal.y+sin(5.0*vLocal.x))
-     +0.25*sin(9.0*vLocal.z-4.0*vLocal.x);
- float volcanoMask=uVolcanoLevel*
-      smoothstep(1.00-0.75*uVolcanoLevel,
-                 1.17-0.75*uVolcanoLevel,ashNoise);
+ // ① 태양 접근도: 불규칙한 지각 경계가 벌어져 용암 균열이 된다.
+ float crackField=0.68*noise3(warped)+0.32*noise3(warped*2.19+3.7);
+ float crackDistance=abs(crackField-0.51);
+ float crackEdge=1.0-smoothstep(0.025,0.095,crackDistance);
+ float hotCore=1.0-smoothstep(0.014,0.058,crackDistance);
+ float thermalField=noise3(p*3.4+vec3(6.1,2.4,7.8));
+ float heating=smoothstep(0.72-0.36*uSolarLevel,
+                          0.83-0.36*uSolarLevel,thermalField);
+ float solarMask=uSolarLevel*hotCore*heating;
 
- // 마스크는 원래 재질/조명의 영향을 받지 않는 흑백 진단 화면.
+ // ② 화산 활동: 큰 현무암 지대와 그 내부의 간헐적인 용암 흐름.
+ float ashField=0.70*noise3(p*5.1+vec3(8.2,3.1,1.7))
+               +0.30*noise3(p*11.2+vec3(2.6,9.1,4.3));
+ float ashLimit=mix(0.73,0.39,uVolcanoLevel);
+ float volcanoMask=uVolcanoLevel*smoothstep(ashLimit-0.09,
+                                            ashLimit+0.07,ashField);
+ float ventField=noise3(p*9.1+vec3(11.4,4.3,7.5));
+ float moltenRidge=1.0-smoothstep(0.016,0.072,abs(ventField-0.52));
+ float ventZone=smoothstep(0.47,0.67,ashField);
+ float lavaFlow=uVolcanoLevel*moltenRidge*ventZone
+               *smoothstep(0.12,0.65,volcanoMask);
+
+ // 각 마스크의 회색은 0~1 범위의 영향도. 두 마스크는 독립적이다.
  if(uViewMode==2){outColor=vec4(vec3(solarMask),1.0);return;}
  if(uViewMode==3){outColor=vec4(vec3(volcanoMask),1.0);return;}
 
- // 기본 표면 보기에서는 두 조건의 재질 변화만 끈다.
+ // 기본 표면 모드에서는 변형을 제외하고 동일한 PBR 표면을 보여 준다.
  if(uViewMode!=1){
-   // 뜨거운 균열: 주황색과 낮은 roughness.
-   base=mix(base,vec3(0.31,0.055,0.012),solarMask*0.90);
-   rough=mix(rough,0.13,solarMask);
-   metal=mix(metal,0.08,solarMask);
-   // 화산재: 검은 현무암, 높은 roughness. 겹칠 때 화산재가 우선.
-   base=mix(base,vec3(0.018,0.026,0.038),volcanoMask);
-   rough=mix(rough,0.91,volcanoMask);
-   metal=mix(metal,0.04,volcanoMask);
+   // 넓게 그을린 지각 가장자리와 좁은 붉은 용암 중심부.
+   float darkRim=uSolarLevel*crackEdge*heating;
+   base=mix(base,vec3(0.050,0.018,0.015),darkRim*0.55);
+   base=mix(base,vec3(0.30,0.042,0.010),solarMask*0.92);
+   rough=mix(rough,0.19,solarMask);
+   metal=mix(metal,0.06,solarMask);
+   // 화산재가 넓게 쌓여 거칠고 어두운 현무암으로 변한다.
+   base=mix(base,vec3(0.021,0.025,0.030),volcanoMask);
+   rough=mix(rough,0.90,volcanoMask);
+   metal=mix(metal,0.035,volcanoMask);
+   // 화산 지대의 일부만 붉게 녹아 흐르며, 발광도 따로 더한다.
+   base=mix(base,vec3(0.34,0.027,0.006),lavaFlow);
+   rough=mix(rough,0.17,lavaFlow);
+   metal=mix(metal,0.04,lavaFlow);
  }
  vec3 color = directPBR(N,V,L,base,rough,metal);
  vec3 F0 = mix(vec3(0.04),base,metal);
@@ -155,9 +199,12 @@ void main(){
  vec3 envColor = srgbToLinear(textureLod(uEnv,envUV,rough*7.0).rgb);
  vec3 envF0 = mix(vec3(0.04),base,metal);
  color += uEnvPower * ao * envColor * envF0;
- // 균열 내부의 자체발광 색. 물리적인 주변 조명은 태양이 담당한다.
- if(uViewMode!=1) color += solarMask*(1.0-0.9*volcanoMask)
-                          *vec3(2.0,0.22,0.018);
+ // 두 종류의 발광: 태양열 균열은 주황, 화산 분출은 붉은색.
+ // 발광 색은 주변 물체를 자동으로 비추지 않는다.
+ if(uViewMode!=1){
+   color+=solarMask*(1.0-0.65*volcanoMask)*vec3(2.4,0.32,0.025);
+   color+=lavaFlow*vec3(3.1,0.10,0.013);
+ }
 
  color=max(color,vec3(0.0));
  color=color/(1.0+color); // HDR → 표시 범위
@@ -219,7 +266,7 @@ const planetModel=D.M4.create(), sunModel=D.M4.create();
 const sunPos=[-3.7,1.0,0.0];
 let lastTime=null,spinAngle=0;
 document.querySelector('#note').textContent=
- 'Crackworld · 2단계: 태양 접근도는 위치와 균열을 함께 바꾸고, 화산 활동은 검은 암석 마스크를 독립적으로 바꿉니다. 자전을 끈 뒤 각 값을 0/50/100으로 비교하세요.';
+ 'Crackworld · 태양에 가까워지면 불규칙한 균열이 빛나고, 화산 활동이 커지면 검은 화산암과 붉은 용암 흐름이 나타납니다. 자전을 끄고 0/50/100과 두 마스크를 비교하세요.';
 let visible=true;
 new IntersectionObserver(e=>visible=e[0].isIntersecting).observe(cv);
 D.loop((seconds)=>{
