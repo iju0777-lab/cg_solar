@@ -17,7 +17,12 @@
 
   // TODO 1: 화면 픽셀에서 출발하는 카메라 광선의 방향을 만든다.
   vec3 cameraRay(vec2 pixel,vec3 eye){
-    return vec3(0.0,0.0,-1.0); // 시작 상태: 모두 같은 방향
+    vec2 uv=(2.0*pixel-uRes)/uRes.y;
+    vec3 target=vec3(0.0,0.0,-1.8);
+    vec3 forward=normalize(target-eye);
+    vec3 right=normalize(cross(forward,vec3(0.0,1.0,0.0)));
+    vec3 up=cross(right,forward);
+    return normalize(1.7*forward+uv.x*right+uv.y*up);
   }
 
   // TODO 2: 광선과 구의 가까운 양수 교차 거리 t를 계산한다.
