@@ -22,11 +22,54 @@
   ]);
   // TODO (실습 2): 여러 실제 기기의 측정 결과를 바탕으로 이 자동 선택 규칙을 수정한다.
   // PC/노트북 구분은 브라우저가 보장하지 않으므로 저장한 기기별 설정이나 간단한 벤치마크를 활용할 수 있다.
-  function chooseInitialProfile(){
-    const mobile=navigator.userAgentData?.mobile || matchMedia('(pointer:coarse)').matches;
-    return mobile?{name:'모바일 기본값',resolution:'320',samples:'4',bounces:'1',advanced:false}
-                 :{name:'데스크톱 기본값',resolution:'640',samples:'8',bounces:'2',advanced:true};
+  
+  function chooseInitialProfile() {
+    const storageKey = 'cg-week7-task2-profile-v1';
+  
+    // 각 기기·브라우저에 저장된 설정을 우선 적용
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey));
+      if (
+        saved &&
+        ['320', '640', '960', '1280', '1920'].includes(saved.resolution) &&
+        ['4', '8', '16', '32'].includes(saved.samples) &&
+        ['1', '2', '3', '4'].includes(saved.bounces) &&
+        typeof saved.advanced === 'boolean'
+      ) {
+        return {
+          name: '이 기기에 저장된 설정',
+          resolution: saved.resolution,
+          samples: saved.samples,
+          bounces: saved.bounces,
+          advanced: saved.advanced
+        };
+      }
+    } catch (e) {
+      console.warn('저장된 설정을 읽을 수 없습니다.', e);
+    }
+
+    // 측정 결과를 반영한 최초 접속 설정
+    const mobile =
+      navigator.userAgentData?.mobile ||
+      matchMedia('(pointer:coarse)').matches;
+
+    return mobile
+      ? {
+          name: 'iPhone 측정 기반 설정',
+          resolution: '640',
+          samples: '8',
+          bounces: '2',
+          advanced: true
+        }
+      : {
+          name: '노트북 측정 기반 설정',
+          resolution: '960',
+          samples: '16',
+          bounces: '2',
+          advanced: true
+        };
   }
+
   const initialProfile=chooseInitialProfile();
   for(const id of ['resolution','samples','bounces']){
     S[id]=initialProfile[id];
