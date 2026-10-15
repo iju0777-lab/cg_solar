@@ -78,6 +78,35 @@
   S.advanced=initialProfile.advanced;
   document.querySelector('#ui .ctl[data-id="advanced"] input').checked=S.advanced;
   document.querySelector('#profile').textContent=`자동 시작 설정: ${initialProfile.name} · ${S.resolution}×${Number(S.resolution)*9/16} · ${S.samples}표본 · ${S.bounces}회 반사 · 고급 효과 ${S.advanced?'켬':'끔'}`;
+    
+  // 기기별 설정을 해당 브라우저에 저장
+  function saveDeviceProfile() {
+    const profile = {
+      resolution: document.querySelector('#ui .ctl[data-id="resolution"] select').value,
+      samples: document.querySelector('#ui .ctl[data-id="samples"] select').value,
+      bounces: document.querySelector('#ui .ctl[data-id="bounces"] select').value,
+      advanced: document.querySelector('#ui .ctl[data-id="advanced"] input').checked
+    };
+
+    try {
+      localStorage.setItem(
+        'cg-week7-task2-profile-v1',
+        JSON.stringify(profile)
+      );
+      document.querySelector('#profile').textContent =
+        `이 기기에 저장된 설정 · ${profile.resolution}×${Number(profile.resolution)*9/16} · ${profile.samples}표본 · ${profile.bounces}회 반사 · 고급 효과 ${profile.advanced?'켬':'끔'}`;
+    } catch (e) {
+      console.warn('설정을 저장하지 못했습니다.', e);
+    }
+  }
+
+  for (const id of ['resolution', 'samples', 'bounces', 'advanced']) {
+    const control = document.querySelector(
+      `#ui .ctl[data-id="${id}"] ${id === 'advanced' ? 'input' : 'select'}`
+    );
+    control.addEventListener('change', saveDeviceProfile);
+  }
+
   const rasterVS=`#version 300 es
   layout(location=0) in vec3 aPos;
   layout(location=1) in vec3 aNormal;
