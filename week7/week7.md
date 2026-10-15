@@ -55,11 +55,11 @@ Local 방식은 가장 빠르지만 그림자와 반사 표현이 단순했다. 
 
 **노트북 (Chrome)**
 
-![노트북 자동 설정 화면](images/task2_laptop_auto_profile.png)
+![노트북 자동 설정 화면](images/05_task2_laptop_auto_profile.png)
 
 **iPhone (Safari)**
 
-![iPhone 자동 설정 화면](images/task2_iphone_auto_profile.png)
+![iPhone 자동 설정 화면](images/06_task2_iphone_auto_profile.png)
 
 `task2.js`에 기기별 설정을 저장하고 자동으로 적용하는 기능을 구현하였다. 두 기기에서 GitHub Pages에 접속하고 새로고침한 후에도 각각의 설정이 유지되는 것을 확인하였다.
 
